@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:recipe_book/data/api/recipe_api_service.dart';
 import 'package:recipe_book/data/local/favorites_local_storage.dart';
+import 'package:recipe_book/data/local/preferences_storage.dart';
 import 'package:recipe_book/data/repositories/recipe_repository.dart';
 import 'package:recipe_book/models/category.dart';
 import 'package:recipe_book/models/recipe.dart';
@@ -9,19 +10,23 @@ import 'package:recipe_book/models/recipe.dart';
 // Create mock classes
 class MockRecipeApiService extends Mock implements RecipeApiService {}
 class MockFavoritesLocalStorage extends Mock implements FavoritesLocalStorage {}
+class MockPreferencesStorage extends Mock implements PreferencesStorage {}
 
 void main() {
   group('RecipeRepository Tests', () {
     late RecipeRepository repository;
     late MockRecipeApiService mockApiService;
     late MockFavoritesLocalStorage mockLocalStorage;
+    late MockPreferencesStorage mockPreferencesStorage;
 
     setUp(() {
       mockApiService = MockRecipeApiService();
       mockLocalStorage = MockFavoritesLocalStorage();
+      mockPreferencesStorage = MockPreferencesStorage();
       repository = RecipeRepository(
         apiService: mockApiService,
         localStorage: mockLocalStorage,
+        preferencesStorage: mockPreferencesStorage,
       );
     });
 

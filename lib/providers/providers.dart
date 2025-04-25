@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import '../data/api/recipe_api_service.dart';
 import '../data/local/favorites_local_storage.dart';
+import '../data/local/preferences_storage.dart';
 import '../data/repositories/recipe_repository.dart';
 import '../models/category.dart' as app_models;
 import '../models/pagination.dart';
@@ -10,6 +11,7 @@ import '../models/recipe.dart';
 import '../utils/image_utils.dart';
 import '../utils/api_cache_manager.dart';
 import 'paginated_recipes_provider.dart';
+import 'preferences_provider.dart';
 
 // Service providers
 final dioProvider = Provider<Dio>((ref) {
@@ -33,12 +35,18 @@ final favoritesLocalStorageProvider = Provider<FavoritesLocalStorage>((ref) {
   return FavoritesLocalStorage();
 });
 
+final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
+  return PreferencesStorage();
+});
+
 final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
   final apiService = ref.watch(recipeApiServiceProvider);
   final localStorage = ref.watch(favoritesLocalStorageProvider);
+  final preferencesStorage = ref.watch(preferencesStorageProvider);
   return RecipeRepository(
     apiService: apiService,
     localStorage: localStorage,
+    preferencesStorage: preferencesStorage,
   );
 });
 

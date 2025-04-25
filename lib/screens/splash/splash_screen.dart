@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipe_book/providers/preferences_provider.dart';
 import 'package:recipe_book/providers/providers.dart';
 import 'package:recipe_book/screens/home/home_screen.dart';
+import 'package:recipe_book/screens/onboarding/onboarding_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 
 /// Splash screen shown when the app is first launched
@@ -62,10 +64,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // Simulate a minimum splash screen duration
     await Future.delayed(const Duration(milliseconds: 2000));
     
-    // Navigate to home screen
+    // Check if user has seen onboarding
+    final hasSeenOnboarding = await ref.read(hasSeenOnboardingProvider.future);
+    
+    // Navigate to appropriate screen
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => hasSeenOnboarding 
+              ? const HomeScreen() 
+              : const OnboardingScreen(),
+        ),
       );
     }
   }

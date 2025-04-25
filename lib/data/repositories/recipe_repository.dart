@@ -3,17 +3,21 @@ import '../../models/pagination.dart';
 import '../../models/recipe.dart';
 import '../api/recipe_api_service.dart';
 import '../local/favorites_local_storage.dart';
+import '../local/preferences_storage.dart';
 
 /// Repository class for managing recipe data from both remote and local sources
 class RecipeRepository {
   final RecipeApiService _apiService;
   final FavoritesLocalStorage _localStorage;
+  final PreferencesStorage _preferencesStorage;
 
   RecipeRepository({
     required RecipeApiService apiService,
     required FavoritesLocalStorage localStorage,
+    required PreferencesStorage preferencesStorage,
   })  : _apiService = apiService,
-        _localStorage = localStorage;
+        _localStorage = localStorage,
+        _preferencesStorage = preferencesStorage;
 
   /// Fetches recipes by category
   Future<List<Recipe>> getRecipesByCategory(String category) async {
@@ -122,5 +126,20 @@ class RecipeRepository {
   /// Clears all API response caches
   Future<bool> clearApiCache() async {
     return _apiService.clearCache();
+  }
+
+  /// Checks if the user has seen the onboarding screens
+  Future<bool> hasSeenOnboarding() async {
+    return _preferencesStorage.hasSeenOnboarding();
+  }
+
+  /// Marks the onboarding as seen
+  Future<void> setOnboardingSeen() async {
+    await _preferencesStorage.setOnboardingSeen();
+  }
+
+  /// Resets the onboarding status (for testing purposes)
+  Future<void> resetOnboardingStatus() async {
+    await _preferencesStorage.resetOnboardingStatus();
   }
 }
