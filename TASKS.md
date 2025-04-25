@@ -59,7 +59,7 @@
 - [x] Add a settings screen (theme toggle, clear favorites) (2025-04-26)
 - [x] Optimize image loading and caching (2025-04-26)
 - [x] Improve performance for large lists (pagination, caching) (2025-04-26)
-- [ ] Add onboarding or tips for first-time users
+- [x] Add onboarding or tips for first-time users (2025-04-26)
 
 ---
 
@@ -80,7 +80,7 @@
 ---
 
 ## 📝 **Next Steps**
-- Add onboarding or tips for first-time users
+- [x] Add onboarding or tips for first-time users (2025-04-26)
 - [x] Implement YouTube video link opening for recipe tutorials (2025-04-26)
 - Add more detailed error handling and offline mode support
 - Enhance tablet layouts for better user experience on larger screens

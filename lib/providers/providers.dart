@@ -13,6 +13,9 @@ import '../utils/api_cache_manager.dart';
 import 'paginated_recipes_provider.dart';
 import 'preferences_provider.dart';
 
+// Re-export tips providers for easy access
+export 'tips_provider.dart';
+
 // Service providers
 final dioProvider = Provider<Dio>((ref) {
   return Dio()
