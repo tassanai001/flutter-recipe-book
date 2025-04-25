@@ -1,4 +1,5 @@
 import '../../models/category.dart' as app_models;
+import '../../models/pagination.dart';
 import '../../models/recipe.dart';
 import '../api/recipe_api_service.dart';
 import '../local/favorites_local_storage.dart';
@@ -19,6 +20,14 @@ class RecipeRepository {
     return _apiService.getRecipesByCategory(category);
   }
 
+  /// Fetches recipes by category with pagination
+  Future<PaginatedResult<Recipe>> getRecipesByCategoryPaginated(
+    String category,
+    PaginationState pagination,
+  ) async {
+    return _apiService.getRecipesByCategoryPaginated(category, pagination);
+  }
+
   /// Fetches all available categories
   Future<List<app_models.Category>> getCategories() async {
     return _apiService.getCategories();
@@ -34,9 +43,25 @@ class RecipeRepository {
     return _apiService.searchRecipes(query);
   }
 
+  /// Searches for recipes by name with pagination
+  Future<PaginatedResult<Recipe>> searchRecipesPaginated(
+    String query,
+    PaginationState pagination,
+  ) async {
+    return _apiService.searchRecipesPaginated(query, pagination);
+  }
+
   /// Fetches recipes by area/cuisine
   Future<List<Recipe>> getRecipesByArea(String area) async {
     return _apiService.getRecipesByArea(area);
+  }
+
+  /// Fetches recipes by area with pagination
+  Future<PaginatedResult<Recipe>> getRecipesByAreaPaginated(
+    String area,
+    PaginationState pagination,
+  ) async {
+    return _apiService.getRecipesByAreaPaginated(area, pagination);
   }
 
   /// Fetches a random recipe
@@ -92,5 +117,10 @@ class RecipeRepository {
   /// Clears all favorite recipes
   Future<void> clearAllFavorites() async {
     await _localStorage.clearFavorites();
+  }
+
+  /// Clears all API response caches
+  Future<bool> clearApiCache() async {
+    return _apiService.clearCache();
   }
 }

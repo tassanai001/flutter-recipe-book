@@ -6,9 +6,8 @@ import 'package:recipe_book/providers/refresh_provider.dart';
 import 'package:recipe_book/screens/detail/recipe_detail_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 import 'package:recipe_book/utils/debouncer.dart';
-import 'package:recipe_book/widgets/common/empty_state.dart';
+import 'package:recipe_book/widgets/common/paginated_recipe_grid.dart';
 import 'package:recipe_book/widgets/common/pull_to_refresh.dart';
-import 'package:recipe_book/widgets/common/recipe_grid.dart';
 
 /// Screen for searching recipes
 class SearchScreen extends ConsumerStatefulWidget {
@@ -46,9 +45,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     // Watch the search query to get current search term
     final searchQuery = ref.watch(searchQueryProvider);
-    
-    // Watch search results based on the current query
-    final searchResultsAsync = ref.watch(searchRecipesProvider(searchQuery));
     
     // Watch the category filter to highlight selected category
     final selectedCategory = ref.watch(categoryFilterProvider);
@@ -96,51 +92,29 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         // Search results
         Expanded(
           child: PullToRefreshWrapper(
-            onRefresh: () => refreshService.refreshSearchData(),
-            isEmpty: searchQuery.isEmpty && selectedCategory == null || 
-                     searchResultsAsync.maybeWhen(
-                       data: (recipes) => recipes.isEmpty,
-                       orElse: () => false,
-                     ),
+            onRefresh: () async {
+              await refreshService.refreshSearchData();
+              // Also refresh the paginated data
+              await ref.read(paginatedRecipesProvider.notifier).refresh();
+            },
+            isEmpty: searchQuery.isEmpty && selectedCategory == null,
             emptyState: searchQuery.isEmpty && selectedCategory == null
                 ? _buildEmptySearchState()
-                : searchResultsAsync.maybeWhen(
-                    data: (recipes) => recipes.isEmpty ? _buildNoResultsState() : null,
-                    orElse: () => null,
+                : null,
+            child: searchQuery.isEmpty && selectedCategory == null
+                ? _buildEmptySearchState()
+                : PaginatedRecipeGrid(
+                    searchQuery: searchQuery.isNotEmpty ? searchQuery : null,
+                    category: selectedCategory,
+                    onRecipeTap: (recipe) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecipeDetailScreen(recipe: recipe),
+                        ),
+                      );
+                    },
                   ),
-            child: searchResultsAsync.when(
-              data: (recipes) {
-                if (searchQuery.isEmpty && selectedCategory == null) {
-                  // Show empty state when no search or filter is active
-                  return _buildEmptySearchState();
-                }
-                
-                if (recipes.isEmpty) {
-                  // Show no results state
-                  return _buildNoResultsState();
-                }
-                
-                return RecipeGrid(
-                  recipes: recipes,
-                  onRecipeTap: (recipe) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RecipeDetailScreen(recipe: recipe),
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () => const RecipeGrid(
-                recipes: [],
-                isLoading: true,
-              ),
-              error: (error, stackTrace) => ErrorState(
-                message: error.toString(),
-                onRetry: () => refreshService.refreshSearchData(),
-              ),
-            ),
           ),
         ),
       ],

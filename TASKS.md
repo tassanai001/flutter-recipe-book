@@ -57,8 +57,8 @@
 
 ### **7. Polish & Bonus Features**
 - [x] Add a settings screen (theme toggle, clear favorites) (2025-04-26)
-- [ ] Optimize image loading and caching
-- [ ] Improve performance for large lists (pagination, caching)
+- [x] Optimize image loading and caching (2025-04-26)
+- [x] Improve performance for large lists (pagination, caching) (2025-04-26)
 - [ ] Add onboarding or tips for first-time users
 
 ---
@@ -80,10 +80,10 @@
 ---
 
 ## 📝 **Next Steps**
-- Implement the settings screen with theme toggle and clear favorites functionality
-- Optimize image loading and caching for better performance
 - Add onboarding or tips for first-time users
-- Improve performance for large lists with more advanced pagination and caching
+- Implement YouTube video link opening for recipe tutorials
+- Add more detailed error handling and offline mode support
+- Enhance tablet layouts for better user experience on larger screens
 
 ---
 

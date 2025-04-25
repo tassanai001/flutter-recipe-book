@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/providers.dart';
 import '../../providers/theme_provider.dart';
 import '../../utils/constants.dart';
-import '../../utils/image_utils.dart';
 
 /// Settings screen that allows users to change app preferences
 /// such as theme and clear favorites
@@ -34,6 +33,8 @@ class SettingsScreen extends ConsumerWidget {
           _buildClearFavoritesButton(context, ref),
           const SizedBox(height: AppConstants.smallPadding),
           _buildClearImageCacheButton(context, ref),
+          const SizedBox(height: AppConstants.smallPadding),
+          _buildClearApiCacheButton(context, ref),
           
           const SizedBox(height: AppConstants.largePadding),
           
@@ -233,6 +234,78 @@ class SettingsScreen extends ConsumerWidget {
               }
             },
             child: const Text('CLEAR', style: TextStyle(color: Colors.orange)),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Builds the clear API cache button with confirmation dialog
+  Widget _buildClearApiCacheButton(BuildContext context, WidgetRef ref) {
+    return Card(
+      elevation: AppConstants.cardElevation,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.smallPadding),
+        child: ListTile(
+          title: const Text('Clear API Cache'),
+          subtitle: const Text('Refresh all recipe data from the server'),
+          leading: const Icon(Icons.cloud_sync, color: Colors.blue),
+          onTap: () => _showClearApiCacheDialog(context, ref),
+        ),
+      ),
+    );
+  }
+  
+  /// Shows a confirmation dialog before clearing API cache
+  void _showClearApiCacheDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear API Cache?'),
+        content: const Text(
+          'This will clear all cached API responses. Fresh data will be downloaded from the server when needed.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              
+              try {
+                // Show loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Clearing API cache...'))
+                );
+                
+                // Clear API cache
+                final success = await ref.read(clearApiCacheProvider)();
+                
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success 
+                          ? 'API cache cleared successfully' 
+                          : 'Failed to clear API cache'
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${e.toString()}'))
+                  );
+                }
+              }
+            },
+            child: const Text('CLEAR', style: TextStyle(color: Colors.blue)),
           ),
         ],
       ),
