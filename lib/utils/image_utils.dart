@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:recipe_book/utils/constants.dart';
 
 /// A custom cache manager for recipe images
 /// This allows for more control over how images are cached

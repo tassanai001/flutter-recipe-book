@@ -5,16 +5,19 @@ import '../data/api/recipe_api_service.dart';
 import '../data/local/favorites_local_storage.dart';
 import '../data/local/preferences_storage.dart';
 import '../data/repositories/recipe_repository.dart';
+import '../data/repositories/network_aware_repository.dart';
 import '../models/category.dart' as app_models;
 import '../models/pagination.dart';
 import '../models/recipe.dart';
 import '../utils/image_utils.dart';
 import '../utils/api_cache_manager.dart';
+import '../utils/connectivity_service.dart';
 import 'paginated_recipes_provider.dart';
-import 'preferences_provider.dart';
 
 // Re-export tips providers for easy access
 export 'tips_provider.dart';
+export 'connectivity_provider.dart';
+export 'preferences_provider.dart';
 
 // Service providers
 final dioProvider = Provider<Dio>((ref) {
@@ -42,6 +45,13 @@ final preferencesStorageProvider = Provider<PreferencesStorage>((ref) {
   return PreferencesStorage();
 });
 
+/// Provider for the connectivity service
+final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
+  final service = ConnectivityService();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
 final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
   final apiService = ref.watch(recipeApiServiceProvider);
   final localStorage = ref.watch(favoritesLocalStorageProvider);
@@ -50,6 +60,19 @@ final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
     apiService: apiService,
     localStorage: localStorage,
     preferencesStorage: preferencesStorage,
+  );
+});
+
+/// Provider for the network-aware repository that handles offline mode
+final networkAwareRepositoryProvider = Provider<NetworkAwareRepository>((ref) {
+  final repository = ref.watch(recipeRepositoryProvider);
+  final connectivityService = ref.watch(connectivityServiceProvider);
+  final cacheManager = ref.watch(apiCacheProvider);
+  
+  return NetworkAwareRepository(
+    repository: repository,
+    connectivityService: connectivityService,
+    cacheManager: cacheManager,
   );
 });
 
