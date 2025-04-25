@@ -21,6 +21,7 @@ class RecipeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the favorite status for this recipe
     final favoriteIdsAsync = ref.watch(favoriteIdsProvider);
     final isFavorite = favoriteIdsAsync.when(
       data: (ids) => ids.contains(recipe.id),
@@ -80,8 +81,30 @@ class RecipeCard extends ConsumerWidget {
                           final repository = ref.read(recipeRepositoryProvider);
                           if (isFavorite) {
                             await repository.removeFromFavorites(recipe.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${recipe.name} removed from favorites'),
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    onPressed: () async {
+                                      await repository.addToFavorites(recipe);
+                                      ref.invalidate(favoriteIdsProvider);
+                                      ref.invalidate(favoriteRecipesProvider);
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
                           } else {
                             await repository.addToFavorites(recipe);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${recipe.name} added to favorites'),
+                                ),
+                              );
+                            }
                           }
                           ref.invalidate(favoriteIdsProvider);
                           ref.invalidate(favoriteRecipesProvider);

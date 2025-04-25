@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_book/providers/providers.dart';
+import 'package:recipe_book/providers/refresh_provider.dart';
 import 'package:recipe_book/screens/detail/recipe_detail_screen.dart';
 import 'package:recipe_book/screens/favorites/favorites_screen.dart';
 import 'package:recipe_book/screens/search/search_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 import 'package:recipe_book/widgets/common/category_card.dart';
+import 'package:recipe_book/widgets/common/empty_state.dart';
+import 'package:recipe_book/widgets/common/pull_to_refresh.dart';
 import 'package:recipe_book/widgets/common/recipe_grid.dart';
 
 /// The main home screen of the app showing recipe categories and featured recipes
@@ -46,6 +49,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final refreshService = ref.watch(refreshProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -59,15 +64,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Refresh the current screen based on which tab is active
               if (_selectedIndex == 0) {
                 // Refresh home screen data
-                ref.invalidate(randomRecipeProvider);
-                ref.invalidate(categoriesProvider);
-                ref.invalidate(filteredRecipesProvider);
+                refreshService.refreshHomeData();
               } else if (_selectedIndex == 1) {
                 // Refresh search screen data
-                ref.invalidate(searchRecipesProvider);
+                refreshService.refreshSearchData();
               } else if (_selectedIndex == 2) {
                 // Refresh favorites
-                ref.invalidate(favoriteRecipesProvider);
+                refreshService.refreshFavoritesData();
               }
             },
           ),
@@ -104,14 +107,10 @@ class _HomeContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the filtered recipes provider to get recipes based on current filters
     final filteredRecipesAsync = ref.watch(filteredRecipesProvider);
+    final refreshService = ref.watch(refreshProvider);
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        // Refresh all home screen data
-        ref.invalidate(randomRecipeProvider);
-        ref.invalidate(categoriesProvider);
-        ref.invalidate(filteredRecipesProvider);
-      },
+    return PullToRefreshWrapper(
+      onRefresh: () => refreshService.refreshHomeData(),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
@@ -137,7 +136,16 @@ class _HomeContent extends ConsumerWidget {
               height: 600, // Fixed height for the grid
               child: filteredRecipesAsync.when(
                 data: (recipes) => recipes.isEmpty
-                    ? const Center(child: Text('No recipes found'))
+                    ? EmptyState(
+                        icon: Icons.search_off,
+                        title: 'No Recipes Found',
+                        message: AppConstants.noResultsMessage,
+                        actionButton: ElevatedButton.icon(
+                          onPressed: () => refreshService.refreshHomeData(),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Refresh'),
+                        ),
+                      )
                     : RecipeGrid(
                         recipes: recipes,
                         onRecipeTap: (recipe) {
@@ -153,10 +161,9 @@ class _HomeContent extends ConsumerWidget {
                   recipes: [],
                   isLoading: true,
                 ),
-                error: (error, stackTrace) => RecipeGrid(
-                  recipes: [],
-                  errorMessage: error.toString(),
-                  onRetry: () => ref.invalidate(filteredRecipesProvider),
+                error: (error, stackTrace) => ErrorState(
+                  message: error.toString(),
+                  onRetry: () => refreshService.refreshHomeData(),
                 ),
               ),
             ),
@@ -200,17 +207,30 @@ class _HomeContent extends ConsumerWidget {
               Image.network(
                 recipe.thumbnailUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.broken_image,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                ),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                },
               ),
               
-              // Gradient overlay for better text visibility
+              // Gradient overlay
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -226,85 +246,94 @@ class _HomeContent extends ConsumerWidget {
               ),
               
               // Recipe info
-              Padding(
-                padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // Featured label
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'Featured',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Featured badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Featured',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Recipe name
-                    Text(
-                      recipe.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 4,
-                            color: Colors.black54,
-                            offset: Offset(0, 2),
+                      const SizedBox(height: 8),
+                      
+                      // Recipe name
+                      Text(
+                        recipe.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 2,
+                              color: Colors.black,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      // Category and area
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.category,
+                            color: Colors.white.withOpacity(0.8),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            recipe.category,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.white.withOpacity(0.8),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            recipe.area,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
+                            ),
                           ),
                         ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Category and area
-                    Row(
-                      children: [
-                        Text(
-                          recipe.category,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                        Text(
-                          recipe.area,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               
-              // Make the entire container clickable
+              // Clickable overlay
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -330,15 +359,16 @@ class _HomeContent extends ConsumerWidget {
             children: [
               const Icon(
                 Icons.error_outline,
-                color: Colors.red,
                 size: 48,
+                color: Colors.red,
               ),
               const SizedBox(height: 16),
               Text(
-                'Error loading featured recipe',
+                'Failed to load featured recipe',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-              TextButton(
+              const SizedBox(height: 8),
+              ElevatedButton(
                 onPressed: () => ref.invalidate(randomRecipeProvider),
                 child: const Text('Retry'),
               ),

@@ -28,7 +28,7 @@
 ---
 
 ### **4. UI: Screens & Widgets**
-- [ ] Splash / loading screen
+- [x] Splash / loading screen (2025-04-25)
 - [x] Main recipes list screen (paginated) (2025-04-25)
 - [x] Search bar and filter chips (2025-04-25)
 - [x] Recipe detail screen (2025-04-25)
@@ -38,8 +38,8 @@
 ---
 
 ### **5. User Interaction & State**
-- [ ] Implement pull-to-refresh
-- [ ] Allow adding/removing favorites (UI + persistence)
+- [x] Implement pull-to-refresh (2025-04-25)
+- [x] Allow adding/removing favorites (UI + persistence) (2025-04-25)
 - [x] Persist and load favorites from storage (2025-04-25)
 - [x] Combine favorite IDs with up-to-date remote data (2025-04-25)
 

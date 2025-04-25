@@ -51,13 +51,15 @@ class RecipeGrid extends ConsumerWidget {
       ),
       itemCount: recipes.length,
       itemBuilder: (context, index) {
+        final recipe = recipes[index];
+        
         return RecipeCard(
-          recipe: recipes[index],
+          recipe: recipe,
           onFavoriteToggle: onFavoriteToggle != null 
-              ? () => onFavoriteToggle!(recipes[index])
+              ? () => onFavoriteToggle!(recipe)
               : null,
           onTap: onRecipeTap != null 
-              ? () => onRecipeTap!(recipes[index])
+              ? () => onRecipeTap!(recipe)
               : null,
         );
       },

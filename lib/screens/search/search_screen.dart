@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_book/models/category.dart' as app_models;
 import 'package:recipe_book/providers/providers.dart';
+import 'package:recipe_book/providers/refresh_provider.dart';
+import 'package:recipe_book/screens/detail/recipe_detail_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 import 'package:recipe_book/utils/debouncer.dart';
+import 'package:recipe_book/widgets/common/empty_state.dart';
+import 'package:recipe_book/widgets/common/pull_to_refresh.dart';
 import 'package:recipe_book/widgets/common/recipe_grid.dart';
 
 /// Screen for searching recipes
@@ -51,6 +55,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     
     // Watch categories for filter chips
     final categoriesAsync = ref.watch(categoriesProvider);
+    
+    // Get refresh service
+    final refreshService = ref.watch(refreshProvider);
 
     return Column(
       children: [
@@ -88,14 +95,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
         // Search results
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              // Refresh search results
-              if (searchQuery.isNotEmpty) {
-                ref.invalidate(searchRecipesProvider(searchQuery));
-              }
-              ref.invalidate(categoriesProvider);
-            },
+          child: PullToRefreshWrapper(
+            onRefresh: () => refreshService.refreshSearchData(),
+            isEmpty: searchQuery.isEmpty && selectedCategory == null || 
+                     searchResultsAsync.maybeWhen(
+                       data: (recipes) => recipes.isEmpty,
+                       orElse: () => false,
+                     ),
+            emptyState: searchQuery.isEmpty && selectedCategory == null
+                ? _buildEmptySearchState()
+                : searchResultsAsync.maybeWhen(
+                    data: (recipes) => recipes.isEmpty ? _buildNoResultsState() : null,
+                    orElse: () => null,
+                  ),
             child: searchResultsAsync.when(
               data: (recipes) {
                 if (searchQuery.isEmpty && selectedCategory == null) {
@@ -108,20 +120,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   return _buildNoResultsState();
                 }
                 
-                return RecipeGrid(recipes: recipes);
+                return RecipeGrid(
+                  recipes: recipes,
+                  onRecipeTap: (recipe) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RecipeDetailScreen(recipe: recipe),
+                      ),
+                    );
+                  },
+                );
               },
               loading: () => const RecipeGrid(
                 recipes: [],
                 isLoading: true,
               ),
-              error: (error, stackTrace) => RecipeGrid(
-                recipes: [],
-                errorMessage: error.toString(),
-                onRetry: () {
-                  if (searchQuery.isNotEmpty) {
-                    ref.invalidate(searchRecipesProvider(searchQuery));
-                  }
-                },
+              error: (error, stackTrace) => ErrorState(
+                message: error.toString(),
+                onRetry: () => refreshService.refreshSearchData(),
               ),
             ),
           ),
@@ -140,6 +157,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void _clearSearch() {
     _searchController.clear();
     ref.read(searchQueryProvider.notifier).state = '';
+    ref.read(categoryFilterProvider.notifier).state = null;
   }
 
   Widget _buildFilterChips(

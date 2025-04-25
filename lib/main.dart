@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:recipe_book/screens/home/home_screen.dart';
+import 'package:recipe_book/screens/splash/splash_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 
 void main() {
@@ -20,7 +20,7 @@ class RecipeBookApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

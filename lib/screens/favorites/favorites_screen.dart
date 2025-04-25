@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_book/providers/providers.dart';
+import 'package:recipe_book/providers/refresh_provider.dart';
 import 'package:recipe_book/screens/detail/recipe_detail_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
+import 'package:recipe_book/widgets/common/empty_state.dart';
+import 'package:recipe_book/widgets/common/pull_to_refresh.dart';
 import 'package:recipe_book/widgets/common/recipe_grid.dart';
 
 /// Screen for displaying user's favorite recipes
@@ -13,6 +16,8 @@ class FavoritesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the favorite recipes provider to get all favorites
     final favoritesAsync = ref.watch(favoriteRecipesProvider);
+    // Get refresh service
+    final refreshService = ref.watch(refreshProvider);
 
     return Column(
       children: [
@@ -48,15 +53,35 @@ class FavoritesScreen extends ConsumerWidget {
 
         // Favorites list
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              // Refresh favorites
-              ref.invalidate(favoriteRecipesProvider);
-            },
+          child: PullToRefreshWrapper(
+            onRefresh: () => refreshService.refreshFavoritesData(),
+            isEmpty: favoritesAsync.maybeWhen(
+              data: (favorites) => favorites.isEmpty,
+              orElse: () => false,
+            ),
+            emptyState: EmptyState(
+              icon: Icons.favorite_border,
+              title: 'No Favorites Yet',
+              message: AppConstants.emptyFavoritesMessage,
+              actionButton: ElevatedButton.icon(
+                onPressed: () {
+                  // Find the parent Scaffold and use its state to navigate
+                  final scaffoldState = ScaffoldMessenger.of(context);
+                  scaffoldState.showSnackBar(
+                    const SnackBar(
+                      content: Text('Tap the Home tab to discover recipes'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.home),
+                label: const Text('Discover Recipes'),
+              ),
+            ),
             child: favoritesAsync.when(
               data: (favorites) {
                 if (favorites.isEmpty) {
-                  return _buildEmptyFavoritesState(context);
+                  return const SizedBox.shrink(); // Empty state is handled by PullToRefreshWrapper
                 }
                 
                 return RecipeGrid(
@@ -65,8 +90,7 @@ class FavoritesScreen extends ConsumerWidget {
                     // Remove from favorites when toggled in favorites screen
                     final repository = ref.read(recipeRepositoryProvider);
                     await repository.removeFromFavorites(recipe.id);
-                    ref.invalidate(favoriteRecipesProvider);
-                    ref.invalidate(favoriteIdsProvider);
+                    refreshService.refreshFavoritesData();
                     
                     // Show confirmation
                     if (context.mounted) {
@@ -78,8 +102,7 @@ class FavoritesScreen extends ConsumerWidget {
                             onPressed: () async {
                               // Add back to favorites
                               await repository.addToFavorites(recipe);
-                              ref.invalidate(favoriteRecipesProvider);
-                              ref.invalidate(favoriteIdsProvider);
+                              refreshService.refreshFavoritesData();
                             },
                           ),
                         ),
@@ -100,10 +123,9 @@ class FavoritesScreen extends ConsumerWidget {
                 recipes: [],
                 isLoading: true,
               ),
-              error: (error, stackTrace) => RecipeGrid(
-                recipes: [],
-                errorMessage: error.toString(),
-                onRetry: () => ref.invalidate(favoriteRecipesProvider),
+              error: (error, stackTrace) => ErrorState(
+                message: error.toString(),
+                onRetry: () => refreshService.refreshFavoritesData(),
               ),
             ),
           ),
@@ -112,58 +134,9 @@ class FavoritesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyFavoritesState(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.largePadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 60),
-              Icon(
-                Icons.favorite_border,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-              ),
-              const SizedBox(height: AppConstants.defaultPadding),
-              Text(
-                'No Favorites Yet',
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppConstants.smallPadding),
-              Text(
-                AppConstants.emptyFavoritesMessage,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    ),
-              ),
-              const SizedBox(height: AppConstants.largePadding),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Find the parent Scaffold and use its state to navigate
-                  final scaffoldState = ScaffoldMessenger.of(context);
-                  scaffoldState.showSnackBar(
-                    const SnackBar(
-                      content: Text('Tap the Home tab to discover recipes'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.home),
-                label: const Text('Discover Recipes'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showClearFavoritesDialog(BuildContext context, WidgetRef ref) {
+    final refreshService = ref.read(refreshProvider);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -181,8 +154,7 @@ class FavoritesScreen extends ConsumerWidget {
               await localStorage.clearFavorites();
               
               // Refresh providers
-              ref.invalidate(favoriteRecipesProvider);
-              ref.invalidate(favoriteIdsProvider);
+              refreshService.refreshFavoritesData();
               
               // Close dialog and show confirmation
               if (context.mounted) {
