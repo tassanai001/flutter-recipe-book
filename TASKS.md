@@ -81,7 +81,7 @@
 
 ## 📝 **Next Steps**
 - Add onboarding or tips for first-time users
-- Implement YouTube video link opening for recipe tutorials
+- [x] Implement YouTube video link opening for recipe tutorials (2025-04-26)
 - Add more detailed error handling and offline mode support
 - Enhance tablet layouts for better user experience on larger screens
 

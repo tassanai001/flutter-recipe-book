@@ -4,6 +4,7 @@ import 'package:recipe_book/models/recipe.dart';
 import 'package:recipe_book/providers/providers.dart';
 import 'package:recipe_book/utils/constants.dart';
 import 'package:recipe_book/utils/image_utils.dart';
+import 'package:recipe_book/utils/url_utils.dart';
 
 /// Screen for displaying detailed information about a recipe
 class RecipeDetailScreen extends ConsumerWidget {
@@ -180,12 +181,9 @@ class RecipeDetailScreen extends ConsumerWidget {
               icon: const Icon(Icons.play_circle_outline),
               label: const Text('Watch on YouTube'),
               onPressed: () {
-                // Launch YouTube URL
-                // This would typically use url_launcher package
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('YouTube link functionality will be implemented in a future update'),
-                  ),
+                UrlUtils.launchYouTubeVideo(
+                  recipe.youtubeUrl,
+                  context: context,
                 );
               },
             ),
