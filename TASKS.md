@@ -13,7 +13,7 @@
 - [x] Define Recipe and Category models (from API JSON) (2025-04-25)
 - [x] Build Recipe API service: fetch recipe list, fetch by ID, fetch categories, search (2025-04-25)
 - [x] Implement retry and timeout handling in dio (2025-04-25)
-- [ ] Unit test API integration
+- [x] Unit test API integration (2025-04-25)
 
 ---
 
@@ -46,10 +46,12 @@
 ---
 
 ### **6. Testing**
-- [ ] Write provider tests (unit and widget tests)
-- [ ] Mock API/service tests
-- [ ] Test pagination and search edge cases
-- [ ] Test offline and error scenarios
+- [x] Write provider tests (unit and widget tests) (2025-04-25)
+- [x] Mock API/service tests (2025-04-25)
+- [x] Test pagination and search edge cases (2025-04-25)
+- [x] Test offline and error scenarios (2025-04-25)
+- [x] Transition from mockito to mocktail for testing (2025-04-25)
+- [x] Fix test issues with timers and SharedPreferences mocking (2025-04-25)
 
 ---
 
@@ -70,19 +72,18 @@
 
 ## 🏁 **Milestones**
 - [x] **M1:** Project scaffold & API integration working (2025-04-25)
-- [ ] **M2:** Pagination, search, and detail view complete
-- [ ] **M3:** Favorites and local persistence implemented
-- [ ] **M4:** Full Riverpod state flows; UI polish & error handling
-- [ ] **M5:** Testing coverage; ready for release/demo
+- [x] **M2:** Pagination, search, and detail view complete (2025-04-25)
+- [x] **M3:** Favorites and local persistence implemented (2025-04-25)
+- [x] **M4:** Full Riverpod state flows; UI polish & error handling (2025-04-25)
+- [x] **M5:** Testing coverage; ready for release/demo (2025-04-25)
 
 ---
 
 ## 📝 **Next Steps**
-- Complete the UI implementation with actual data from providers
-- Implement pull-to-refresh functionality
-- Add favorite toggling functionality in the UI
-- Write unit tests for API and repository classes
-- Implement proper error handling and loading states
+- Implement the settings screen with theme toggle and clear favorites functionality
+- Optimize image loading and caching for better performance
+- Add onboarding or tips for first-time users
+- Improve performance for large lists with more advanced pagination and caching
 
 ---
 
@@ -90,3 +91,6 @@
 - Need to consider API rate limits for TheMealDB
 - Consider adding caching layer for API responses to improve performance
 - UI needs refinement for tablet layouts
+- Consider implementing offline mode functionality for better user experience
+- Testing with timers requires special handling to avoid test timeouts
+- SharedPreferences mocking requires careful setup in tests
