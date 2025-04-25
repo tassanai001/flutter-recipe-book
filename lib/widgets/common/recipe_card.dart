@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_book/models/recipe.dart';
 import 'package:recipe_book/providers/providers.dart';
 import 'package:recipe_book/screens/detail/recipe_detail_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
+import 'package:recipe_book/utils/image_utils.dart';
 
 /// A card widget for displaying a recipe
 class RecipeCard extends ConsumerWidget {
@@ -52,19 +52,12 @@ class RecipeCard extends ConsumerWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 1.0,
-                  child: CachedNetworkImage(
+                  child: OptimizedImage(
                     imageUrl: recipe.thumbnailUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(AppConstants.cardBorderRadius),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey.shade300,
-                      child: const Icon(Icons.error),
-                    ),
+                    useShimmerEffect: true,
                   ),
                 ),
                 // Favorite button

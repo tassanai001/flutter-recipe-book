@@ -6,6 +6,7 @@ import '../data/local/favorites_local_storage.dart';
 import '../data/repositories/recipe_repository.dart';
 import '../models/category.dart' as app_models;
 import '../models/recipe.dart';
+import 'package:recipe_book/utils/image_utils.dart';
 
 // Service providers
 final dioProvider = Provider<Dio>((ref) {
@@ -36,6 +37,11 @@ final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
     apiService: apiService,
     localStorage: localStorage,
   );
+});
+
+/// Provider for the image cache manager
+final imageCacheProvider = Provider<RecipeImageCacheManager>((ref) {
+  return RecipeImageCacheManager();
 });
 
 // State providers for UI state

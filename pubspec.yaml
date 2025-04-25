@@ -52,6 +52,7 @@ dependencies:
   cached_network_image: ^3.3.1
   responsive_builder: ^0.7.0
   shimmer: ^3.0.0
+  flutter_cache_manager: ^3.3.1
   
   # Utils
   equatable: ^2.0.5

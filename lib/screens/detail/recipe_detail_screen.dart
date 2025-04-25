@@ -1,9 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_book/models/recipe.dart';
 import 'package:recipe_book/providers/providers.dart';
 import 'package:recipe_book/utils/constants.dart';
+import 'package:recipe_book/utils/image_utils.dart';
 
 /// Screen for displaying detailed information about a recipe
 class RecipeDetailScreen extends ConsumerWidget {
@@ -97,23 +97,10 @@ class RecipeDetailScreen extends ConsumerWidget {
           fit: StackFit.expand,
           children: [
             // Recipe image
-            CachedNetworkImage(
+            OptimizedImage(
               imageUrl: recipe.thumbnailUrl,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[300],
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: Colors.grey[300],
-                child: const Icon(
-                  Icons.broken_image,
-                  size: 64,
-                  color: Colors.grey,
-                ),
-              ),
+              useShimmerEffect: false,
             ),
             // Gradient overlay for better text visibility
             const DecoratedBox(

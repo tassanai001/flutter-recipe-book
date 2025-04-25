@@ -1,9 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipe_book/models/category.dart' as app_models;
 import 'package:recipe_book/providers/providers.dart';
 import 'package:recipe_book/utils/constants.dart';
+import 'package:recipe_book/utils/image_utils.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// A card widget for displaying a recipe category
@@ -55,29 +55,11 @@ class CategoryCard extends ConsumerWidget {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppConstants.defaultBorderRadius),
               ),
-              child: CachedNetworkImage(
+              child: OptimizedImage(
                 imageUrl: category.thumbnailUrl,
                 height: 70,
                 width: 100,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(
-                    color: Colors.white,
-                    height: 70,
-                    width: 100,
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  height: 70,
-                  width: 100,
-                  color: Colors.grey[200],
-                  child: const Icon(
-                    Icons.broken_image,
-                    color: Colors.grey,
-                  ),
-                ),
+                useShimmerEffect: true,
               ),
             ),
             

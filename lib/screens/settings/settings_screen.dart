@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/providers.dart';
 import '../../providers/theme_provider.dart';
 import '../../utils/constants.dart';
+import '../../utils/image_utils.dart';
 
 /// Settings screen that allows users to change app preferences
 /// such as theme and clear favorites
@@ -31,6 +32,8 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader(context, 'Data Management'),
           const SizedBox(height: AppConstants.smallPadding),
           _buildClearFavoritesButton(context, ref),
+          const SizedBox(height: AppConstants.smallPadding),
+          _buildClearImageCacheButton(context, ref),
           
           const SizedBox(height: AppConstants.largePadding),
           
@@ -164,6 +167,72 @@ class SettingsScreen extends ConsumerWidget {
               }
             },
             child: const Text('CLEAR', style: TextStyle(color: AppConstants.errorColor)),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Builds the clear image cache button with confirmation dialog
+  Widget _buildClearImageCacheButton(BuildContext context, WidgetRef ref) {
+    return Card(
+      elevation: AppConstants.cardElevation,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.smallPadding),
+        child: ListTile(
+          title: const Text('Clear Image Cache'),
+          subtitle: const Text('Free up storage space by clearing cached images'),
+          leading: const Icon(Icons.image_not_supported_outlined, color: Colors.orange),
+          onTap: () => _showClearImageCacheDialog(context, ref),
+        ),
+      ),
+    );
+  }
+  
+  /// Shows a confirmation dialog before clearing image cache
+  void _showClearImageCacheDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Image Cache?'),
+        content: const Text(
+          'This will clear all cached images. Images will be re-downloaded when needed.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              
+              try {
+                // Show loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Clearing image cache...'))
+                );
+                
+                // Clear image cache
+                await ref.read(imageCacheProvider).clearCache();
+                
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Image cache cleared'))
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${e.toString()}'))
+                  );
+                }
+              }
+            },
+            child: const Text('CLEAR', style: TextStyle(color: Colors.orange)),
           ),
         ],
       ),
