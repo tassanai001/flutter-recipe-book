@@ -1,0 +1,70 @@
+# 🍃 **Flutter AI IDE Project Rules**
+
+### 🔄 **Project Awareness & Context**
+- **Always read `PLANNING.md` at the start of each new session** to understand project architecture, goals, constraints, and style.
+- **Check `TASKS.md` before starting a new coding task**. If a task is missing, add it (with a brief summary and today's date) before proceeding.
+- **Strictly follow the project’s file structure and architectural guidelines** as described in `PLANNING.md` (`lib/models`, `lib/data`, `lib/providers`, etc.).
+- **Respect modular clean architecture:** Always separate presentation, domain, and data layers.
+
+---
+
+### 🧱 **Code Structure & Modularity**
+- **No single file may exceed 500 lines of code.** If a file approaches this limit, split logic into smaller, feature-focused Dart files.
+- **Group code by feature and responsibility,** matching the planned folder structure.
+- **Use relative imports within your package** for internal modules and widgets.
+- **When adding new features, always use new files in the correct folder.**
+
+---
+
+### 🧪 **Testing & Reliability**
+- **All new logic must be accompanied by unit and/or widget tests** using `flutter_test`, matching the `/tests` folder structure and feature grouping.
+- **Update or add tests whenever you change logic or add features.**
+- **Tests must include:**
+  - One expected/normal use test
+  - One edge case test
+  - One failure case test (mock error, bad input, etc.)
+
+---
+
+### ✅ **Task Tracking & Completion**
+- **Mark completed tasks immediately in `TASKS.md`.**
+- **Add new tasks or TODOs found during development** to `TASKS.md` under a “Discovered During Work” section, with dates.
+- **Always update status and progress in `TASKS.md`.**
+
+---
+
+### 📎 **Style & Conventions**
+- **Use Dart and Flutter best practices** at all times.
+- **Follow the style and patterns established in `PLANNING.md`.**
+- **Use Riverpod as the only state management solution.** (No mixing with Provider, BLoC, etc.)
+- **Ensure models, providers, and API logic follow separation of concerns.**
+- **Document all public classes and methods with Dart doc comments.**
+- **Use clear, descriptive naming for files, variables, and providers.**
+- **Code must be formatted with `dart format`.**
+- **Comment non-obvious code; use inline `// Reason:` for complex logic.**
+
+---
+
+### 📚 **Documentation & Explainability**
+- **Update `README.md` or `PLANNING.md` when architecture, dependencies, or core usage changes.**
+- **Document all key Riverpod providers, data flow, and API endpoints.**
+- **Every screen/widget should have a short comment explaining its purpose.**
+
+---
+
+### 🧠 **AI IDE Behavior Rules**
+- **Never assume missing context. If uncertain, ask for clarification.**
+- **Never invent or use unverified packages, APIs, or methods.** Stick to Flutter, Dart, and packages in `PLANNING.md`.
+- **Always check that file paths and module names exist** before referencing them in code, tests, or documentation.
+- **Never delete or overwrite code/files** unless the task is clearly listed in `TASKS.md` or explicitly instructed.
+- **Never create new state management code outside of Riverpod.**
+- **Always preserve and reference existing architectural patterns from `PLANNING.md`.**
+
+---
+
+### 💡 **Special Flutter Project Additions**
+- **Use `shared_preferences` for local favorites only.**
+- **Handle API limits and errors gracefully in all network operations.**
+- **Implement pagination, search debounce, and merging of local/remote data as described.**
+- **Ensure all public-facing screens have appropriate error and empty states.**
+- **Never hardcode API keys—use `.env` or secrets handling if credentials are needed.**
