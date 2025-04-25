@@ -14,6 +14,8 @@ A modern, responsive mobile app for browsing, searching, and managing recipes, b
 - Contextual tips system to guide users through app features
 - Offline mode with cached data access
 - Comprehensive error handling with connectivity awareness
+- Dark mode support with theme toggling
+- YouTube video integration for recipe tutorials
 
 ## 🏛️ Architecture
 
@@ -27,11 +29,13 @@ This project follows clean architecture principles with a clear separation of co
 
 - **Flutter**: 3.19.3
 - **Dart**: 3.3.1
-- **State Management**: Riverpod
-- **Networking**: dio for API integration
-- **Local Storage**: shared_preferences for favorites
-- **UI Components**: cached_network_image, responsive_builder
-- **API**: TheMealDB
+- **State Management**: Riverpod for clean, testable state management
+- **Networking**: dio for API integration with caching and error handling
+- **Local Storage**: shared_preferences for favorites and app settings
+- **UI Components**: cached_network_image for efficient image loading, responsive_builder for adaptive layouts
+- **API**: TheMealDB for recipe data
+- **Testing**: flutter_test for unit and widget tests, mocktail for mocking
+- **Logging**: logger for debug and error logging
 
 ## 📁 Project Structure
 
@@ -93,11 +97,12 @@ As of April 26, 2025, we have completed the following:
 - ✅ Project setup with clean architecture folder structure
 - ✅ Dependency configuration with Riverpod, dio, shared_preferences, etc.
 - ✅ Data models for Recipe and Category
-- ✅ API service for TheMealDB integration
+- ✅ API service for TheMealDB integration with caching and error handling
 - ✅ Local storage service for favorites management
 - ✅ Repository layer to abstract data sources
 - ✅ Riverpod providers for state management
 - ✅ Network-aware repository with offline caching
+- ✅ Connectivity monitoring for offline mode support
 
 ### UI Components
 - ✅ Complete screen structure (Home, Search, Favorites, Detail, Settings, Onboarding)
@@ -109,6 +114,7 @@ As of April 26, 2025, we have completed the following:
 - ✅ Onboarding flow for first-time users
 - ✅ In-app contextual tips system
 - ✅ Connectivity-aware error handling
+- ✅ Settings screen with theme toggle and data management options
 
 ### User Experience
 - ✅ Pull-to-refresh implementation
@@ -118,12 +124,43 @@ As of April 26, 2025, we have completed the following:
 - ✅ Performance optimizations for large lists
 - ✅ Offline mode with cached data access
 - ✅ Graceful error handling with retry options
+- ✅ Debounced search to respect API rate limits
+- ✅ Smooth transitions and loading states
 
 ### Testing
 - ✅ Unit tests for providers and repositories
 - ✅ Widget tests for UI components
 - ✅ Mock tests for API services
 - ✅ Edge case and error handling tests
+- ✅ Offline mode testing
+- ✅ Pagination and state management tests
+
+## 🔄 Key Riverpod Providers
+
+The app uses several key providers for state management:
+
+- **recipesProvider**: Manages paginated recipe lists
+- **recipeDetailProvider**: Fetches detailed recipe information
+- **searchQueryProvider**: Manages search input with debounce
+- **categoryFilterProvider**: Handles category filtering
+- **favoritesProvider**: Manages favorite recipes with local persistence
+- **themeProvider**: Handles app theme switching
+- **connectivityProvider**: Monitors network connectivity
+- **tipsProvider**: Manages contextual user tips
+
+## 🌐 API Integration
+
+The app integrates with TheMealDB API with the following features:
+
+- Efficient caching to minimize network requests
+- Rate limit awareness with debounced searches
+- Error handling with user-friendly messages
+- Offline fallback to cached data
+- Manual pagination implementation for APIs without native pagination
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ## 📚 Documentation
 
@@ -138,7 +175,3 @@ The project includes unit tests, widget tests, and integration tests:
 ```
 flutter test
 ```
-
-## 📄 License
-
-This project is licensed under the MIT License.

@@ -66,7 +66,7 @@
 ### **8. Documentation & Milestones**
 - [x] Update README and PLANNING.md with setup, usage, and architecture notes (2025-04-25)
 - [x] Document API endpoints and key Riverpod providers (2025-04-25)
-- [ ] Track bugs or technical debt discovered during development
+- [x] Track bugs or technical debt discovered during development (2025-04-26)
 
 ---
 
@@ -94,3 +94,22 @@
 - Consider implementing offline mode functionality for better user experience
 - Testing with timers requires special handling to avoid test timeouts
 - SharedPreferences mocking requires careful setup in tests
+
+## 🐛 **Known Issues & Technical Debt**
+- **API Rate Limiting**: TheMealDB free tier has a limit of 100 requests per day. Implemented caching and debounce, but might need a more robust solution for production.
+- **Image Loading**: Some recipe images are large and may cause performance issues on slower devices. Consider implementing more aggressive image compression or lazy loading.
+- **Tablet UI**: While the app is responsive, some screens could be better optimized for tablet layouts to take advantage of the larger screen real estate.
+- **Test Coverage**: Current test coverage is good but could be improved, especially for edge cases and error scenarios.
+- **Offline Mode**: Current offline implementation relies on caching. A more robust solution with a local database like Hive or SQLite might be better for a production app.
+- **State Management**: Some providers could be optimized to reduce unnecessary rebuilds.
+- **Accessibility**: Need to improve screen reader support and keyboard navigation.
+
+## 🚀 **Future Enhancements**
+- Implement a more robust local database using Hive or SQLite
+- Add user authentication to sync favorites across devices
+- Implement recipe sharing functionality
+- Add nutrition information and dietary filters
+- Create a meal planning feature
+- Implement a shopping list feature based on recipe ingredients
+- Add voice search functionality
+- Improve accessibility features
