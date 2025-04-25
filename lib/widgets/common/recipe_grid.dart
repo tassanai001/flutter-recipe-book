@@ -10,6 +10,8 @@ class RecipeGrid extends ConsumerWidget {
   final bool isLoading;
   final String? errorMessage;
   final VoidCallback? onRetry;
+  final Function(Recipe)? onFavoriteToggle;
+  final Function(Recipe)? onRecipeTap;
 
   const RecipeGrid({
     super.key,
@@ -17,6 +19,8 @@ class RecipeGrid extends ConsumerWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRetry,
+    this.onFavoriteToggle,
+    this.onRecipeTap,
   });
 
   @override
@@ -47,7 +51,15 @@ class RecipeGrid extends ConsumerWidget {
       ),
       itemCount: recipes.length,
       itemBuilder: (context, index) {
-        return RecipeCard(recipe: recipes[index]);
+        return RecipeCard(
+          recipe: recipes[index],
+          onFavoriteToggle: onFavoriteToggle != null 
+              ? () => onFavoriteToggle!(recipes[index])
+              : null,
+          onTap: onRecipeTap != null 
+              ? () => onRecipeTap!(recipes[index])
+              : null,
+        );
       },
     );
   }

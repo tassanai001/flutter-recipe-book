@@ -9,6 +9,7 @@ class Recipe extends Equatable {
   final String instructions;
   final String thumbnailUrl;
   final String? youtubeUrl;
+  final Map<String, dynamic> originalData;
   final List<String> ingredients;
   final List<String> measurements;
   final Map<String, String> ingredientsWithMeasurements;
@@ -22,6 +23,7 @@ class Recipe extends Equatable {
     required this.instructions,
     required this.thumbnailUrl,
     this.youtubeUrl,
+    required this.originalData,
     required this.ingredients,
     required this.measurements,
     required this.ingredientsWithMeasurements,
@@ -63,6 +65,7 @@ class Recipe extends Equatable {
       instructions: json['strInstructions'] ?? '',
       thumbnailUrl: json['strMealThumb'] ?? '',
       youtubeUrl: json['strYoutube'],
+      originalData: json,
       ingredients: ingredients,
       measurements: measurements,
       ingredientsWithMeasurements: ingredientsWithMeasurements,
@@ -84,6 +87,7 @@ class Recipe extends Equatable {
       measurements: const [],
       ingredientsWithMeasurements: const {},
       tags: const [],
+      originalData: json,
     );
   }
 
@@ -103,6 +107,26 @@ class Recipe extends Equatable {
     };
   }
 
+  /// Get ingredient at the specified index (1-20)
+  String? getIngredient(int index) {
+    if (index < 1 || index > 20) return null;
+    final ingredient = originalData['strIngredient$index'];
+    if (ingredient == null || ingredient.toString().trim().isEmpty) {
+      return null;
+    }
+    return ingredient.toString();
+  }
+
+  /// Get measurement at the specified index (1-20)
+  String? getMeasurement(int index) {
+    if (index < 1 || index > 20) return null;
+    final measurement = originalData['strMeasure$index'];
+    if (measurement == null || measurement.toString().trim().isEmpty) {
+      return null;
+    }
+    return measurement.toString();
+  }
+
   /// Creates a copy of this Recipe with the given fields replaced with the new values
   Recipe copyWith({
     String? id,
@@ -116,6 +140,7 @@ class Recipe extends Equatable {
     List<String>? measurements,
     Map<String, String>? ingredientsWithMeasurements,
     List<String>? tags,
+    Map<String, dynamic>? originalData,
   }) {
     return Recipe(
       id: id ?? this.id,
@@ -129,6 +154,7 @@ class Recipe extends Equatable {
       measurements: measurements ?? this.measurements,
       ingredientsWithMeasurements: ingredientsWithMeasurements ?? this.ingredientsWithMeasurements,
       tags: tags ?? this.tags,
+      originalData: originalData ?? this.originalData,
     );
   }
 
@@ -145,5 +171,6 @@ class Recipe extends Equatable {
         measurements,
         ingredientsWithMeasurements,
         tags,
+        originalData,
       ];
 }

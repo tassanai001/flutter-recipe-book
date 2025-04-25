@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipe_book/models/category.dart' as app_models;
+import 'package:recipe_book/providers/providers.dart';
 import 'package:recipe_book/utils/constants.dart';
 import 'package:recipe_book/utils/debouncer.dart';
+import 'package:recipe_book/widgets/common/recipe_grid.dart';
 
 /// Screen for searching recipes
 class SearchScreen extends ConsumerStatefulWidget {
@@ -18,6 +21,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    // Initialize search controller with current search query if any
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentQuery = ref.read(searchQueryProvider);
+      if (currentQuery.isNotEmpty) {
+        _searchController.text = currentQuery;
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -25,6 +40,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch the search query to get current search term
+    final searchQuery = ref.watch(searchQueryProvider);
+    
+    // Watch search results based on the current query
+    final searchResultsAsync = ref.watch(searchRecipesProvider(searchQuery));
+    
+    // Watch the category filter to highlight selected category
+    final selectedCategory = ref.watch(categoryFilterProvider);
+    
+    // Watch categories for filter chips
+    final categoriesAsync = ref.watch(categoriesProvider);
+
     return Column(
       children: [
         // Search bar
@@ -48,16 +75,55 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ),
             onChanged: _onSearchChanged,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (value) {
+              // Immediately update search when user presses enter
+              ref.read(searchQueryProvider.notifier).state = value;
+            },
           ),
         ),
 
         // Filter chips
-        _buildFilterChips(),
+        _buildFilterChips(categoriesAsync, selectedCategory),
 
         // Search results
         Expanded(
-          child: Center(
-            child: Text('Search results will appear here'),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              // Refresh search results
+              if (searchQuery.isNotEmpty) {
+                ref.invalidate(searchRecipesProvider(searchQuery));
+              }
+              ref.invalidate(categoriesProvider);
+            },
+            child: searchResultsAsync.when(
+              data: (recipes) {
+                if (searchQuery.isEmpty && selectedCategory == null) {
+                  // Show empty state when no search or filter is active
+                  return _buildEmptySearchState();
+                }
+                
+                if (recipes.isEmpty) {
+                  // Show no results state
+                  return _buildNoResultsState();
+                }
+                
+                return RecipeGrid(recipes: recipes);
+              },
+              loading: () => const RecipeGrid(
+                recipes: [],
+                isLoading: true,
+              ),
+              error: (error, stackTrace) => RecipeGrid(
+                recipes: [],
+                errorMessage: error.toString(),
+                onRetry: () {
+                  if (searchQuery.isNotEmpty) {
+                    ref.invalidate(searchRecipesProvider(searchQuery));
+                  }
+                },
+              ),
+            ),
           ),
         ),
       ],
@@ -66,47 +132,140 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _onSearchChanged(String query) {
     _debouncer.run(() {
-      // This will be implemented later with proper provider updates
-      // ref.read(searchQueryProvider.notifier).setQuery(query);
+      // Update search query provider after debounce
+      ref.read(searchQueryProvider.notifier).state = query;
     });
   }
 
   void _clearSearch() {
     _searchController.clear();
-    // This will be implemented later with proper provider updates
-    // ref.read(searchQueryProvider.notifier).clearQuery();
+    ref.read(searchQueryProvider.notifier).state = '';
   }
 
-  Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.defaultPadding,
-      ),
-      child: Row(
-        children: [
-          _buildFilterChip('Beef', true),
-          _buildFilterChip('Chicken', false),
-          _buildFilterChip('Dessert', false),
-          _buildFilterChip('Lamb', false),
-          _buildFilterChip('Pasta', false),
-          _buildFilterChip('Seafood', false),
-          _buildFilterChip('Vegetarian', false),
-        ],
+  Widget _buildFilterChips(
+    AsyncValue<List<app_models.Category>> categoriesAsync,
+    String? selectedCategory,
+  ) {
+    return SizedBox(
+      height: 50,
+      child: categoriesAsync.when(
+        data: (categories) {
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.defaultPadding,
+            ),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final isSelected = category.name == selectedCategory;
+              
+              return Padding(
+                padding: const EdgeInsets.only(right: AppConstants.smallPadding),
+                child: FilterChip(
+                  label: Text(category.name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    // Toggle category filter
+                    if (selected) {
+                      ref.read(categoryFilterProvider.notifier).state = category.name;
+                    } else {
+                      ref.read(categoryFilterProvider.notifier).state = null;
+                    }
+                  },
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (_, __) => Center(
+          child: TextButton.icon(
+            onPressed: () => ref.invalidate(categoriesProvider),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reload Categories'),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Padding(
-      padding: const EdgeInsets.only(right: AppConstants.smallPadding),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) {
-          // This will be implemented later with proper provider updates
-          // ref.read(categoryFilterProvider.notifier).setCategory(selected ? label : null);
-        },
+  Widget _buildEmptySearchState() {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.largePadding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 60),
+              Icon(
+                Icons.search,
+                size: 80,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+              ),
+              const SizedBox(height: AppConstants.defaultPadding),
+              Text(
+                'Search for recipes',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppConstants.smallPadding),
+              Text(
+                'Enter a recipe name, ingredient, or select a category to find delicious recipes',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoResultsState() {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.largePadding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 60),
+              Icon(
+                Icons.search_off,
+                size: 80,
+                color: Theme.of(context).colorScheme.error.withOpacity(0.5),
+              ),
+              const SizedBox(height: AppConstants.defaultPadding),
+              Text(
+                'No recipes found',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppConstants.smallPadding),
+              Text(
+                'Try a different search term or category filter',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppConstants.defaultPadding),
+              ElevatedButton.icon(
+                onPressed: _clearSearch,
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear Search'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
