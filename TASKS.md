@@ -1,47 +1,47 @@
 ## 🚀 **Active Work & Subtasks**
 
 ### **1. Project Setup & Foundation**
-- [ ] Initialize Flutter project and set up Git repo
-- [ ] Configure dependencies: Riverpod, http/dio, shared_preferences, cached_network_image, etc.
-- [ ] Set up folder structure (`lib/models`, `lib/data`, `lib/providers`, etc.)
-- [ ] Implement base themes and responsive layout
-- [ ] Configure flutter_lints
+- [x] Initialize Flutter project and set up Git repo (2025-04-25)
+- [x] Configure dependencies: Riverpod, http/dio, shared_preferences, cached_network_image, etc. (2025-04-25)
+- [x] Set up folder structure (`lib/models`, `lib/data`, `lib/providers`, etc.) (2025-04-25)
+- [x] Implement base themes and responsive layout (2025-04-25)
+- [x] Configure flutter_lints (2025-04-25)
 
 ---
 
 ### **2. Models & API Layer**
-- [ ] Define Recipe and Category models (from API JSON)
-- [ ] Build Recipe API service: fetch recipe list, fetch by ID, fetch categories, search
-- [ ] Implement retry and timeout handling in dio
+- [x] Define Recipe and Category models (from API JSON) (2025-04-25)
+- [x] Build Recipe API service: fetch recipe list, fetch by ID, fetch categories, search (2025-04-25)
+- [x] Implement retry and timeout handling in dio (2025-04-25)
 - [ ] Unit test API integration
 
 ---
 
 ### **3. Riverpod Providers**
-- [ ] Create `recipesProvider` with pagination support
-- [ ] Create `recipeDetailProvider` (FutureProvider.family for recipe details)
-- [ ] Create `searchQueryProvider` and debounce logic
-- [ ] Create `categoryFilterProvider`
-- [ ] Combine to make `filteredRecipesProvider`
-- [ ] Implement `favoritesProvider` using shared_preferences
+- [x] Create `recipesProvider` with pagination support (2025-04-25)
+- [x] Create `recipeDetailProvider` (FutureProvider.family for recipe details) (2025-04-25)
+- [x] Create `searchQueryProvider` and debounce logic (2025-04-25)
+- [x] Create `categoryFilterProvider` (2025-04-25)
+- [x] Combine to make `filteredRecipesProvider` (2025-04-25)
+- [x] Implement `favoritesProvider` using shared_preferences (2025-04-25)
 
 ---
 
 ### **4. UI: Screens & Widgets**
 - [ ] Splash / loading screen
-- [ ] Main recipes list screen (paginated)
-- [ ] Search bar and filter chips
-- [ ] Recipe detail screen
-- [ ] Favorites screen
-- [ ] Error/empty state widgets
+- [x] Main recipes list screen (paginated) (2025-04-25)
+- [x] Search bar and filter chips (2025-04-25)
+- [x] Recipe detail screen (2025-04-25)
+- [x] Favorites screen (2025-04-25)
+- [x] Error/empty state widgets (2025-04-25)
 
 ---
 
 ### **5. User Interaction & State**
 - [ ] Implement pull-to-refresh
 - [ ] Allow adding/removing favorites (UI + persistence)
-- [ ] Persist and load favorites from storage
-- [ ] Combine favorite IDs with up-to-date remote data
+- [x] Persist and load favorites from storage (2025-04-25)
+- [x] Combine favorite IDs with up-to-date remote data (2025-04-25)
 
 ---
 
@@ -62,17 +62,31 @@
 ---
 
 ### **8. Documentation & Milestones**
-- [ ] Update README and PLANNING.md with setup, usage, and architecture notes
-- [ ] Document API endpoints and key Riverpod providers
+- [x] Update README and PLANNING.md with setup, usage, and architecture notes (2025-04-25)
+- [x] Document API endpoints and key Riverpod providers (2025-04-25)
 - [ ] Track bugs or technical debt discovered during development
 
 ---
 
 ## 🏁 **Milestones**
-- **M1:** Project scaffold & API integration working
-- **M2:** Pagination, search, and detail view complete
-- **M3:** Favorites and local persistence implemented
-- **M4:** Full Riverpod state flows; UI polish & error handling
-- **M5:** Testing coverage; ready for release/demo
+- [x] **M1:** Project scaffold & API integration working (2025-04-25)
+- [ ] **M2:** Pagination, search, and detail view complete
+- [ ] **M3:** Favorites and local persistence implemented
+- [ ] **M4:** Full Riverpod state flows; UI polish & error handling
+- [ ] **M5:** Testing coverage; ready for release/demo
 
 ---
+
+## 📝 **Next Steps**
+- Complete the UI implementation with actual data from providers
+- Implement pull-to-refresh functionality
+- Add favorite toggling functionality in the UI
+- Write unit tests for API and repository classes
+- Implement proper error handling and loading states
+
+---
+
+## 🔍 **Discovered During Work**
+- Need to consider API rate limits for TheMealDB
+- Consider adding caching layer for API responses to improve performance
+- UI needs refinement for tablet layouts
