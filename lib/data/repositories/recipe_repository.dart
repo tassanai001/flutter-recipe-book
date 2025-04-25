@@ -88,4 +88,9 @@ class RecipeRepository {
 
     return favoriteRecipes;
   }
+
+  /// Clears all favorite recipes
+  Future<void> clearAllFavorites() async {
+    await _localStorage.clearFavorites();
+  }
 }

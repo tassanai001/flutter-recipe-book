@@ -5,6 +5,7 @@ import 'package:recipe_book/providers/refresh_provider.dart';
 import 'package:recipe_book/screens/detail/recipe_detail_screen.dart';
 import 'package:recipe_book/screens/favorites/favorites_screen.dart';
 import 'package:recipe_book/screens/search/search_screen.dart';
+import 'package:recipe_book/screens/settings/settings_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 import 'package:recipe_book/widgets/common/category_card.dart';
 import 'package:recipe_book/widgets/common/empty_state.dart';
@@ -72,6 +73,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 // Refresh favorites
                 refreshService.refreshFavoritesData();
               }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipe_book/providers/theme_provider.dart';
 import 'package:recipe_book/screens/splash/splash_screen.dart';
 import 'package:recipe_book/utils/constants.dart';
 
@@ -14,11 +15,14 @@ class RecipeBookApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the theme provider to update the app theme when it changes
+    final themeMode = ref.watch(themeProvider);
+    
     return MaterialApp(
       title: AppConstants.appName,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
     );

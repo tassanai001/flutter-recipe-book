@@ -124,3 +124,14 @@ final isFavoriteProvider = FutureProvider.family<bool, String>((ref, recipeId) a
   final repository = ref.watch(recipeRepositoryProvider);
   return repository.isFavorite(recipeId);
 });
+
+// Settings providers
+final clearFavoritesProvider = Provider<Future<void> Function()>((ref) {
+  return () async {
+    final repository = ref.read(recipeRepositoryProvider);
+    await repository.clearAllFavorites();
+    // Refresh the favorites providers
+    ref.invalidate(favoriteIdsProvider);
+    ref.invalidate(favoriteRecipesProvider);
+  };
+});

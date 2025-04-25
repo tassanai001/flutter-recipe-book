@@ -56,7 +56,7 @@
 ---
 
 ### **7. Polish & Bonus Features**
-- [ ] Add a settings screen (theme toggle, clear favorites)
+- [x] Add a settings screen (theme toggle, clear favorites) (2025-04-26)
 - [ ] Optimize image loading and caching
 - [ ] Improve performance for large lists (pagination, caching)
 - [ ] Add onboarding or tips for first-time users
