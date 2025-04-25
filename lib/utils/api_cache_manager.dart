@@ -13,7 +13,19 @@ class ApiCacheManager {
   /// Singleton instance
   static final ApiCacheManager _instance = ApiCacheManager._internal();
   factory ApiCacheManager() => _instance;
+  
+  /// Whether we're running in test mode (no actual SharedPreferences access)
+  bool _testMode = false;
+  
+  /// In-memory cache for test mode
+  final Map<String, String> _memoryCache = {};
+  
   ApiCacheManager._internal();
+  
+  /// Enable test mode to avoid SharedPreferences access in tests
+  void enableTestMode() {
+    _testMode = true;
+  }
   
   /// Cache an API response
   /// [key] - Unique key for the cached data
@@ -25,20 +37,35 @@ class ApiCacheManager {
     Duration duration = _defaultCacheDuration,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final cacheEntry = CacheEntry(
         data: data,
         timestamp: DateTime.now(),
         expiryDuration: duration,
       );
       
-      final success = await prefs.setString(
-        _getCacheKey(key),
-        jsonEncode(cacheEntry.toJson()),
-      );
+      final cacheString = jsonEncode(cacheEntry.toJson());
       
-      _logger.d('Cached data for key: $key, success: $success');
-      return success;
+      if (_testMode) {
+        // In test mode, store in memory
+        _memoryCache[_getCacheKey(key)] = cacheString;
+        return true;
+      }
+      
+      // In normal mode, use SharedPreferences
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final success = await prefs.setString(
+          _getCacheKey(key),
+          cacheString,
+        );
+        
+        _logger.d('Cached data for key: $key, success: $success');
+        return success;
+      } catch (e) {
+        // If SharedPreferences fails, log and continue without caching
+        _logger.e('Error caching data: $e');
+        return false;
+      }
     } catch (e) {
       _logger.e('Error caching data: $e');
       return false;
@@ -50,8 +77,22 @@ class ApiCacheManager {
   /// Returns null if cache doesn't exist or is expired
   Future<dynamic> getCachedData(String key) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final cachedString = prefs.getString(_getCacheKey(key));
+      String? cachedString;
+      
+      if (_testMode) {
+        // In test mode, get from memory
+        cachedString = _memoryCache[_getCacheKey(key)];
+      } else {
+        // In normal mode, use SharedPreferences
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          cachedString = prefs.getString(_getCacheKey(key));
+        } catch (e) {
+          // If SharedPreferences fails, log and continue as if no cache exists
+          _logger.e('Error retrieving cached data: $e');
+          return null;
+        }
+      }
       
       if (cachedString == null) {
         _logger.d('No cache found for key: $key');
@@ -78,10 +119,23 @@ class ApiCacheManager {
   /// Invalidate a specific cache entry
   Future<bool> invalidateCache(String key) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final success = await prefs.remove(_getCacheKey(key));
-      _logger.d('Invalidated cache for key: $key, success: $success');
-      return success;
+      if (_testMode) {
+        // In test mode, remove from memory
+        _memoryCache.remove(_getCacheKey(key));
+        return true;
+      }
+      
+      // In normal mode, use SharedPreferences
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final success = await prefs.remove(_getCacheKey(key));
+        _logger.d('Invalidated cache for key: $key, success: $success');
+        return success;
+      } catch (e) {
+        // If SharedPreferences fails, log and continue
+        _logger.e('Error invalidating cache: $e');
+        return false;
+      }
     } catch (e) {
       _logger.e('Error invalidating cache: $e');
       return false;
@@ -91,16 +145,29 @@ class ApiCacheManager {
   /// Clear all cached API responses
   Future<bool> clearAllCache() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final allKeys = prefs.getKeys();
-      final cacheKeys = allKeys.where((key) => key.startsWith(_cachePrefix));
-      
-      for (final key in cacheKeys) {
-        await prefs.remove(key);
+      if (_testMode) {
+        // In test mode, clear memory cache
+        _memoryCache.clear();
+        return true;
       }
       
-      _logger.d('Cleared all API cache entries: ${cacheKeys.length}');
-      return true;
+      // In normal mode, use SharedPreferences
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final allKeys = prefs.getKeys();
+        final cacheKeys = allKeys.where((key) => key.startsWith(_cachePrefix));
+        
+        for (final key in cacheKeys) {
+          await prefs.remove(key);
+        }
+        
+        _logger.d('Cleared all API cache entries: ${cacheKeys.length}');
+        return true;
+      } catch (e) {
+        // If SharedPreferences fails, log and continue
+        _logger.e('Error clearing all cache: $e');
+        return false;
+      }
     } catch (e) {
       _logger.e('Error clearing all cache: $e');
       return false;

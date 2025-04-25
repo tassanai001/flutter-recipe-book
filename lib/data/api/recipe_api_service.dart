@@ -11,9 +11,19 @@ class RecipeApiService {
   static const String _baseUrl = 'https://www.themealdb.com/api/json/v1/1';
   final Dio _dio;
   final Logger _logger = Logger();
-  final ApiCacheManager _cacheManager = ApiCacheManager();
+  final ApiCacheManager _cacheManager;
 
-  RecipeApiService({Dio? dio}) : _dio = dio ?? Dio();
+  RecipeApiService({
+    Dio? dio, 
+    ApiCacheManager? cacheManager,
+    bool isTestMode = false,
+  }) : 
+    _dio = dio ?? Dio(),
+    _cacheManager = cacheManager ?? ApiCacheManager() {
+    if (isTestMode) {
+      _cacheManager.enableTestMode();
+    }
+  }
 
   /// Fetches a paginated list of recipes by category
   /// [category] - Category name to filter recipes

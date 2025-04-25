@@ -4,18 +4,44 @@ import 'package:mocktail/mocktail.dart';
 import 'package:recipe_book/data/api/recipe_api_service.dart';
 import 'package:recipe_book/models/category.dart';
 import 'package:recipe_book/models/recipe.dart';
+import 'package:recipe_book/utils/api_cache_manager.dart';
 
-// Create mock class
+// Create mock classes
 class MockDio extends Mock implements Dio {}
+class MockApiCacheManager extends Mock implements ApiCacheManager {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
+  // Register fallback values for types used in matchers
+  setUpAll(() {
+    registerFallbackValue(const Duration(days: 1));
+  });
+  
   group('RecipeApiService Tests', () {
     late MockDio mockDio;
+    late MockApiCacheManager mockCacheManager;
     late RecipeApiService apiService;
 
     setUp(() {
       mockDio = MockDio();
-      apiService = RecipeApiService(dio: mockDio);
+      mockCacheManager = MockApiCacheManager();
+      
+      // Configure mock cache manager with specific matchers
+      when(() => mockCacheManager.getCachedData(any())).thenAnswer((_) async => null);
+      when(() => mockCacheManager.cacheData(
+        any(), 
+        any(), 
+        duration: any(named: 'duration'),
+      )).thenAnswer((_) async => true);
+      when(() => mockCacheManager.enableTestMode()).thenReturn(null);
+      
+      // Create API service with test mode enabled
+      apiService = RecipeApiService(
+        dio: mockDio,
+        cacheManager: mockCacheManager,
+        isTestMode: true,
+      );
     });
 
     group('getRecipesByCategory', () {
